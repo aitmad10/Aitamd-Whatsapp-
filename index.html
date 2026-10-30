@@ -2,36 +2,522 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{height:100%;margin:0;background:#0b141a;color:#e9edef;font-family:Inter,system-ui,Arial}button,input{font:inherit}.muted{color:#8696a0}.wa{background:#00a884}.bubble{max-width:min(78%,520px);padding:9px 12px;border-radius:10px;margin:7px 0;overflow-wrap:anywhere}.mine{background:#005c4b;margin-left:auto;border-top-right-radius:3px}.theirs{background:#202c33;margin-right:auto;border-top-left-radius:3px}.contact:hover{background:#202c33}.active{background:#2a3942}.wall{background-color:#0b141a;background-image:radial-gradient(#17232b 1px,transparent 1px);background-size:22px 22px}#messages{scroll-behavior:smooth}.hide-scroll::-webkit-scrollbar{display:none}@media(max-width:767px){.mobile-hide{display:none!important}.mobile-show{display:flex!important}}
 </style></head><body>
 <section id="login" class="min-h-full flex items-center justify-center p-4"><form id="loginForm" class="w-full max-w-sm rounded-2xl border border-[#2a3942] bg-[#111b21] p-7 shadow-2xl"><div class="mx-auto mb-5 grid h-16 w-16 place-items-center rounded-full bg-[#00a884]/15 text-3xl">☏</div><h1 class="text-center text-2xl font-bold">Welcome to Chat</h1><p class="muted mb-6 mt-2 text-center text-sm">Enter your name and phone number to continue</p><label class="mb-1 block text-xs uppercase tracking-wider text-[#00a884]">Your name</label><input id="name" maxlength="40" required placeholder="Your name" class="mb-4 w-full rounded-xl border border-[#2a3942] bg-[#202c33] p-3 outline-none focus:border-[#00a884]"><label class="mb-1 block text-xs uppercase tracking-wider text-[#00a884]">Phone number</label><input id="phone" required inputmode="tel" placeholder="Phone number" class="mb-5 w-full rounded-xl border border-[#2a3942] bg-[#202c33] p-3 outline-none focus:border-[#00a884]"><button class="wa w-full rounded-xl py-3 font-bold text-[#062b23]">Continue</button><p id="loginError" class="mt-3 text-center text-sm text-rose-400"></p><p class="muted mt-4 text-center text-xs">Prototype sign-in: phone number is not verified by SMS.</p></form></section>
-<main id="app" class="hidden h-full w-full overflow-hidden"><div class="flex h-full"><aside id="sidebar" class="flex w-full flex-col border-r border-[#222d34] bg-[#111b21] md:w-[360px] md:flex-shrink-0"><header class="flex h-16 items-center justify-between bg-[#202c33] px-4"><div><div id="myName" class="font-semibold">You</div><div id="myPhone" class="muted text-xs"></div></div><div class="flex gap-2"><button id="refresh" title="Refresh" class="rounded-full p-2 hover:bg-[#2a3942]">↻</button><button id="logout" title="Log out" class="rounded-full p-2 hover:bg-[#2a3942]">⇥</button></div></header><div class="p-3"><input id="search" placeholder="Search contacts" class="w-full rounded-lg bg-[#202c33] px-4 py-2.5 text-sm outline-none"></div><div class="flex items-center justify-between px-4 pb-2"><span class="text-xs font-bold uppercase tracking-wider text-[#00a884]">Contacts</span><span id="userCount" class="muted text-xs">0</span></div><div id="contacts" class="hide-scroll flex-1 overflow-y-auto"></div><div class="muted border-t border-[#222d34] p-3 text-center text-xs">PHP + MySQL Messenger</div></aside>
-<section id="chat" class="hidden min-w-0 flex-1 flex-col bg-[#0b141a] md:flex"><div id="empty" class="wall flex flex-1 flex-col items-center justify-center p-8 text-center"><div class="mb-4 text-6xl">💬</div><h2 class="text-2xl font-light">Your messages</h2><p class="muted mt-2 max-w-sm text-sm">Select a contact to start a private conversation.</p></div><div id="conversation" class="hidden min-h-0 flex-1 flex-col"><header class="flex h-16 items-center justify-between border-b border-[#222d34] bg-[#202c33] px-3 sm:px-5"><div class="flex min-w-0 items-center gap-3"><button id="back" class="rounded-full p-2 md:hidden">‹</button><div class="grid h-10 w-10 flex-shrink-0 place-items-center rounded-full bg-[#2a3942] font-bold" id="peerAvatar">?</div><div class="min-w-0"><div id="peerName" class="truncate font-semibold"></div><div id="peerStatus" class="muted text-xs">Offline</div></div></div><button id="callBtn" class="rounded-lg border border-[#00a884]/40 bg-[#00a884]/10 px-3 py-2 text-sm font-semibold text-[#00a884]">☎ Call</button></header><div id="messages" class="wall hide-scroll flex-1 overflow-y-auto px-3 py-4 sm:px-8"></div><div class="flex items-center gap-2 border-t border-[#222d34] bg-[#202c33] p-3"><label class="cursor-pointer rounded-full p-2 text-xl hover:bg-[#2a3942]" title="Attach image">＋<input id="imageFile" type="file" accept="image/*" hidden></label><button id="record" class="rounded-full p-2 text-xl hover:bg-[#2a3942]" title="Record voice note">🎙</button><input id="messageInput" placeholder="Type a message" class="min-w-0 flex-1 rounded-full bg-[#2a3942] px-4 py-3 text-sm outline-none"><button id="send" class="wa rounded-full px-4 py-2.5 font-bold text-[#062b23]">➤</button></div></div></section></div></main>
-<div id="toast" class="fixed bottom-5 left-1/2 z-50 hidden -translate-x-1/2 rounded-xl bg-[#2a3942] px-4 py-3 text-sm shadow-xl"></div><div id="incoming" class="fixed inset-0 z-40 hidden items-center justify-center bg-black/80 p-5"><div class="w-full max-w-sm rounded-2xl bg-[#202c33] p-6 text-center"><div class="mb-3 text-4xl">☎</div><h3 id="incomingName" class="text-xl font-bold">Incoming call</h3><p class="muted mb-6 text-sm">Voice call</p><div class="flex justify-center gap-4"><button id="rejectCall" class="rounded-full bg-rose-600 px-5 py-3 font-semibold">Decline</button><button id="acceptCall" class="rounded-full bg-[#00a884] px-5 py-3 font-semibold text-[#062b23]">Accept</button></div></div></div><audio id="remoteAudio" autoplay playsinline></audio>
+<main id="app" class="hidden h-full w-full overflow-hidden"><div class="flex h-full"><aside id="sidebar" class="flex w-full flex-col border-r border-[#222d34] bg-[#111b21] md:w-[360px] md:flex-shrink-0"><header class="flex h-16 items-center justify-between bg-[#202c33] px-4"><div><div id="myName" class="font-semibold">You</div><div id="myPhone" class="muted text-xs"></div></div><div class="flex gap-2"><button id="refresh" type="button" title="Refresh" class="rounded-full p-2 hover:bg-[#2a3942]">↻</button><button id="logout" type="button" title="Log out" class="rounded-full p-2 hover:bg-[#2a3942]">⇥</button></div></header><div class="p-3"><input id="search" placeholder="Search contacts" class="w-full rounded-lg bg-[#202c33] px-4 py-2.5 text-sm outline-none"></div><div class="flex items-center justify-between px-4 pb-2"><span class="text-xs font-bold uppercase tracking-wider text-[#00a884]">Contacts</span><span id="userCount" class="muted text-xs">0</span></div><div id="contacts" class="hide-scroll flex-1 overflow-y-auto"></div><div class="muted border-t border-[#222d34] p-3 text-center text-xs">PHP + MySQL Messenger</div></aside>
+<section id="chat" class="hidden min-w-0 flex-1 flex-col bg-[#0b141a] md:flex"><div id="empty" class="wall flex flex-1 flex-col items-center justify-center p-8 text-center"><div class="mb-4 text-6xl">💬</div><h2 class="text-2xl font-light">Your messages</h2><p class="muted mt-2 max-w-sm text-sm">Select a contact to start a private conversation.</p></div><div id="conversation" class="hidden min-h-0 flex-1 flex-col"><header class="flex h-16 items-center justify-between border-b border-[#222d34] bg-[#202c33] px-3 sm:px-5"><div class="flex min-w-0 items-center gap-3"><button id="back" type="button" class="rounded-full p-2 md:hidden">‹</button><div class="grid h-10 w-10 flex-shrink-0 place-items-center rounded-full bg-[#2a3942] font-bold" id="peerAvatar">?</div><div class="min-w-0"><div id="peerName" class="truncate font-semibold"></div><div id="peerStatus" class="muted text-xs">Offline</div></div></div><button id="callBtn" type="button" class="rounded-lg border border-[#00a884]/40 bg-[#00a884]/10 px-3 py-2 text-sm font-semibold text-[#00a884]">☎ Call</button></header><div id="messages" class="wall hide-scroll flex-1 overflow-y-auto px-3 py-4 sm:px-8"></div><div class="flex items-center gap-2 border-t border-[#222d34] bg-[#202c33] p-3"><label class="cursor-pointer rounded-full p-2 text-xl hover:bg-[#2a3942]" title="Attach image">＋<input id="imageFile" type="file" accept="image/*" hidden></label><button id="record" type="button" class="rounded-full p-2 text-xl hover:bg-[#2a3942]" title="Record voice note">🎙</button><input id="messageInput" placeholder="Type a message" class="min-w-0 flex-1 rounded-full bg-[#2a3942] px-4 py-3 text-sm outline-none"><button id="send" type="button" class="wa rounded-full px-4 py-2.5 font-bold text-[#062b23]">➤</button></div></div></section></div></main>
+<div id="toast" class="fixed bottom-5 left-1/2 z-50 hidden -translate-x-1/2 rounded-xl bg-[#2a3942] px-4 py-3 text-sm shadow-xl"></div><div id="incoming" class="fixed inset-0 z-40 hidden items-center justify-center bg-black/80 p-5"><div class="w-full max-w-sm rounded-2xl bg-[#202c33] p-6 text-center"><div class="mb-3 text-4xl">☎</div><h3 id="incomingName" class="text-xl font-bold">Incoming call</h3><p class="muted mb-6 text-sm">Voice call</p><div class="flex justify-center gap-4"><button id="rejectCall" type="button" class="rounded-full bg-rose-600 px-5 py-3 font-semibold">Decline</button><button id="acceptCall" type="button" class="rounded-full bg-[#00a884] px-5 py-3 font-semibold text-[#062b23]">Accept</button></div></div></div><audio id="remoteAudio" autoplay playsinline></audio>
 <script>
-// Set this to the full URL of your PHP backend folder, e.g. https://example.com/backend
-const API_BASE = 'https://aitmad2.kesug.com';
-const $=id=>document.getElementById(id);let token=localStorage.getItem('chat_token')||'',me=null,users=[],peer=null,lastId=0,pollers=[],pc=null,localStream=null,currentCall=null,iceLast=0,recording=null,recordChunks=[];
-function toast(s){$('toast').textContent=s;$('toast').classList.remove('hidden');setTimeout(()=>$('toast').classList.add('hidden'),2600)}
-async function api(action,data={},method='POST'){let opt={method,headers:{'Authorization':'Bearer '+token}};if(method==='GET'){}else if(data instanceof FormData)opt.body=data;else{opt.headers['Content-Type']='application/json';opt.body=JSON.stringify(data)}let r=await fetch(API_BASE+'/api.php?action='+action+(method==='GET'?'&'+new URLSearchParams(data):''),opt);let j=await r.json();if(!r.ok||!j.ok)throw Error(j.error||'Request failed');return j}
-function showLogin(){ $('app').classList.add('hidden');$('login').classList.remove('hidden') }
-function showApp(){ $('login').classList.add('hidden');$('app').classList.remove('hidden');$('myName').textContent=me.name;$('myPhone').textContent=me.phone;loadUsers();pollers.forEach(clearInterval);pollers=[setInterval(loadUsers,6000),setInterval(()=>api('presence').catch(()=>{}),12000),setInterval(pollCall,2500)]; }
-$('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginError').textContent='';try{let r=await fetch(API_BASE+'/api.php?action=login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:$('name').value.trim(),phone:$('phone').value.trim()})});let j=await r.json();if(!r.ok||!j.ok)throw Error(j.error||'Login failed');token=j.token;me=j.user;localStorage.setItem('chat_token',token);showApp()}catch(err){$('loginError').textContent=err.message}});
-async function restore(){if(!token){showLogin();return}try{let r=await api('me',{},'GET');me=r.user;showApp()}catch(e){localStorage.removeItem('chat_token');token='';showLogin()}};
-$('logout').onclick=async()=>{try{await api('logout')}catch(e){}localStorage.removeItem('chat_token');token='';me=null;pollers.forEach(clearInterval);showLogin()};$('refresh').onclick=loadUsers;
-async function loadUsers(){try{let r=await api('users',{},'GET');users=r.users;$('userCount').textContent=users.length;renderUsers()}catch(e){}}
-function renderUsers(){let q=$('search').value.toLowerCase();$('contacts').innerHTML='';users.filter(u=>(u.name+' '+u.phone).toLowerCase().includes(q)).forEach(u=>{let b=document.createElement('button');b.className='contact flex w-full items-center gap-3 border-b border-[#222d34] px-4 py-3 text-left '+(peer&&peer.id==u.id?'active':'');b.innerHTML=`<div class="relative grid h-12 w-12 flex-shrink-0 place-items-center rounded-full bg-[#2a3942] font-bold">${esc(u.name.slice(0,1).toUpperCase())}<i class="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-[#111b21] ${u.online?'bg-[#00a884]':'bg-[#8696a0]'}"></i></div><div class="min-w-0 flex-1"><div class="truncate font-medium">${esc(u.name)}</div><div class="muted truncate text-xs">${esc(u.phone)}</div></div><span class="${u.online?'text-[#00a884]':'muted'} text-xs">${u.online?'Online':'Offline'}</span>`;b.onclick=()=>openPeer(u);$('contacts').appendChild(b)})}
-function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-async function openPeer(u){peer=u;lastId=0;$('sidebar').classList.add('mobile-hide');$('chat').classList.remove('hidden');$('chat').classList.add('mobile-show');$('empty').classList.add('hidden');$('conversation').classList.remove('hidden');$('conversation').classList.add('flex');$('peerName').textContent=u.name;$('peerAvatar').textContent=u.name.slice(0,1).toUpperCase();$('peerStatus').textContent=u.online?'Online':'Offline';await loadMessages();if(window.msgTimer)clearInterval(window.msgTimer);window.msgTimer=setInterval(loadMessages,2200);renderUsers()}
-$('back').onclick=()=>{$('sidebar').classList.remove('mobile-hide');$('chat').classList.add('hidden');$('chat').classList.remove('mobile-show');if(window.msgTimer)clearInterval(window.msgTimer)};
-async function loadMessages(){if(!peer)return;try{let r=await api('messages',{peer:peer.id},'GET');let box=$('messages'),old=box.scrollHeight;box.innerHTML='';r.messages.forEach(m=>{lastId=Math.max(lastId,Number(m.id));let div=document.createElement('div');div.className='bubble '+(Number(m.sender_id)===Number(me.id)?'mine':'theirs');let content='';if(m.type==='image')content=`<img src="${esc(API_BASE+'/'+m.file_url)}" class="max-h-64 max-w-full rounded-lg" loading="lazy">`;else if(m.type==='audio')content=`<audio controls src="${esc(API_BASE+'/'+m.file_url)}" class="max-w-full"></audio>`;else content=`<div class="whitespace-pre-wrap text-sm">${esc(m.content)}</div>`;div.innerHTML=content+`<div class="muted mt-1 text-right text-[10px]">${new Date(m.created_at.replace(' ','T')+'Z').toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div>`;box.appendChild(div)});if(box.scrollHeight!==old||r.messages.length)box.scrollTop=box.scrollHeight}catch(e){}}
-async function sendText(){let s=$('messageInput').value.trim();if(!s||!peer)return; $('send').disabled=true;try{await api('send',{peer:peer.id,type:'text',content:s});$('messageInput').value='';await loadMessages()}catch(e){toast(e.message)}finally{$('send').disabled=false}}
-$('send').onclick=sendText;$('messageInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendText()}});$('search').oninput=renderUsers;
-async function uploadFile(file){if(!peer||!file)return;let fd=new FormData();fd.append('file',file);try{let r=await api('upload',fd);await api('send',{peer:peer.id,type:r.type,file_url:r.url,content:''});await loadMessages()}catch(e){toast(e.message)}}$('imageFile').onchange=e=>{uploadFile(e.target.files[0]);e.target.value=''};
-$('record').onclick=async()=>{if(recording){recording.stop();$('record').textContent='🎙';return}try{let stream=await navigator.mediaDevices.getUserMedia({audio:true});recordChunks=[];recording=new MediaRecorder(stream);recording.ondataavailable=e=>{if(e.data.size)recordChunks.push(e.data)};recording.onstop=async()=>{let blob=new Blob(recordChunks,{type:recording.mimeType||'audio/webm'});stream.getTracks().forEach(t=>t.stop());recording=null;if(blob.size)await uploadFile(new File([blob],'voice.webm',{type:blob.type}))};recording.start();$('record').textContent='■';toast('Recording… tap ■ to send')}catch(e){toast('Microphone permission is needed')}};
-async function callRequest(action,data){return api(action,data)}
-async function startCall(){if(!peer)return;try{localStream=await navigator.mediaDevices.getUserMedia({audio:true});pc=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'}]});localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));pc.ontrack=e=>$('remoteAudio').srcObject=e.streams[0];pc.onicecandidate=e=>{if(e.candidate&&currentCall)callRequest('call_ice',{call_id:currentCall,candidate:e.candidate.toJSON()}).catch(()=>{})};let offer=await pc.createOffer();await pc.setLocalDescription(offer);let r=await callRequest('call_create',{peer:peer.id,offer:offer});currentCall=r.call_id;iceLast=0;toast('Calling '+peer.name+'…');watchCall();}catch(e){cleanupCall();toast('Could not start call: '+e.message)}}
-$('callBtn').onclick=startCall;
-async function pollCall(){try{let r=await api('call_poll',{},'GET');let c=r.call;if(!c)return;if(c.status==='ringing'&&Number(c.callee_id)===Number(me.id)&&currentCall!==c.id){currentCall=c.id;peer=users.find(u=>Number(u.id)===Number(c.caller_id))||{id:c.caller_id,name:c.caller_name,phone:c.caller_phone};$('incomingName').textContent=c.caller_name+' is calling';$('incoming').classList.remove('hidden');$('incoming').classList.add('flex');}else if(c.id===currentCall){if(c.status==='accepted'&&c.answer_sdp&&pc&&!pc.currentRemoteDescription){await pc.setRemoteDescription(c.answer_sdp)}if(['rejected','ended','busy'].includes(c.status)){toast('Call '+c.status);cleanupCall()}}}catch(e){}}
-$('acceptCall').onclick=async()=>{try{let r=await api('call_poll',{},'GET'),c=r.call;if(!c)return;localStream=await navigator.mediaDevices.getUserMedia({audio:true});pc=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'}]});localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));pc.ontrack=e=>$('remoteAudio').srcObject=e.streams[0];pc.onicecandidate=e=>{if(e.candidate)callRequest('call_ice',{call_id:currentCall,candidate:e.candidate.toJSON()}).catch(()=>{})};await pc.setRemoteDescription(c.offer_sdp);let answer=await pc.createAnswer();await pc.setLocalDescription(answer);await callRequest('call_update',{call_id:currentCall,status:'accepted',answer:answer});$('incoming').classList.add('hidden');$('incoming').classList.remove('flex');$('callBtn').textContent='End call';iceLast=0;watchCall()}catch(e){toast('Could not accept call: '+e.message)}};
-$('rejectCall').onclick=async()=>{if(currentCall)await callRequest('call_update',{call_id:currentCall,status:'rejected'}).catch(()=>{});$('incoming').classList.add('hidden');$('incoming').classList.remove('flex');cleanupCall()};
-let callTimer=null;function watchCall(){if(callTimer)clearInterval(callTimer);callTimer=setInterval(async()=>{if(!currentCall||!pc)return;try{let r=await api('call_ice',{call_id:currentCall,after:iceLast},'GET');for(let x of r.items){iceLast=Math.max(iceLast,Number(x.id));try{await pc.addIceCandidate(x.candidate)}catch(e){}}}catch(e){}},1000)}function cleanupCall(){$('callBtn').textContent='☎ Call';if(callTimer)clearInterval(callTimer);callTimer=null;if(pc){pc.close();pc=null}if(localStream){localStream.getTracks().forEach(t=>t.stop());localStream=null}$('remoteAudio').srcObject=null;$('incoming').classList.add('hidden');$('incoming').classList.remove('flex');currentCall=null}
-window.addEventListener('beforeunload',()=>{if(currentCall)callRequest('call_update',{call_id:currentCall,status:'ended'}).catch(()=>{});if(localStream)localStream.getTracks().forEach(t=>t.stop())});restore();
+// PHP backend URL on InfinityFree (no trailing slash)
+const API_BASE = 'https://aitmad2.kesug.com'.replace(/\/+$/, '');
+const $ = id => document.getElementById(id);
+
+function getStoredToken() {
+  try { return localStorage.getItem('chat_token') || ''; } catch (e) { return ''; }
+}
+function setStoredToken(val) {
+  try {
+    if (val) localStorage.setItem('chat_token', val);
+    else localStorage.removeItem('chat_token');
+  } catch (e) {}
+}
+
+let token = getStoredToken(),
+    me = null,
+    users = [],
+    peer = null,
+    lastId = 0,
+    pollers = [],
+    pc = null,
+    localStream = null,
+    currentCall = null,
+    iceLast = 0,
+    recording = null,
+    recordChunks = [],
+    toastTimer = null;
+
+function toast(s) {
+  $('toast').textContent = s;
+  $('toast').classList.remove('hidden');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => $('toast').classList.add('hidden'), 2600);
+}
+
+function fileUrl(u) {
+  const s = String(u || '').trim();
+  if (!s) return '';
+  if (/^https?:\/\//i.test(s)) return s;
+  return API_BASE + '/' + s.replace(/^\/+/, '');
+}
+
+function formatTime(ts) {
+  if (!ts) return '';
+  const iso = String(ts).includes('T') ? String(ts) : String(ts).replace(' ', 'T') + 'Z';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return String(ts);
+  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+async function parseApiResponse(r) {
+  const text = await r.text();
+  let j = null;
+  try {
+    j = JSON.parse(text);
+  } catch (e) {
+    throw new Error('Backend returned an invalid JSON response. Check https://aitmad2.kesug.com/api.php?action=health and CORS/database config.');
+  }
+  if (!r.ok || !j || !j.ok) {
+    throw new Error((j && j.error) || ('Request failed (' + r.status + ')'));
+  }
+  return j;
+}
+
+async function api(action, data = {}, method = 'POST') {
+  const params = new URLSearchParams({ action });
+  if (token) params.set('token', token);
+
+  const opt = {
+    method,
+    mode: 'cors',
+    headers: {}
+  };
+  if (token) {
+    opt.headers['Authorization'] = 'Bearer ' + token;
+  }
+
+  if (method === 'GET') {
+    Object.entries(data || {}).forEach(([k, v]) => {
+      if (v !== undefined && v !== null) params.set(k, String(v));
+    });
+  } else if (data instanceof FormData) {
+    if (token && !data.has('token')) data.append('token', token);
+    opt.body = data;
+  } else {
+    opt.headers['Content-Type'] = 'application/json';
+    opt.body = JSON.stringify(token ? { ...data, token } : data);
+  }
+
+  let r;
+  try {
+    r = await fetch(API_BASE + '/api.php?' + params.toString(), opt);
+  } catch (networkErr) {
+    throw new Error('Cannot reach backend at ' + API_BASE + '. Verify your internet connection and CORS settings.');
+  }
+  return parseApiResponse(r);
+}
+
+function showLogin() {
+  $('app').classList.add('hidden');
+  $('login').classList.remove('hidden');
+}
+
+function showApp() {
+  $('login').classList.add('hidden');
+  $('app').classList.remove('hidden');
+  $('myName').textContent = me.name;
+  $('myPhone').textContent = me.phone;
+  loadUsers();
+  pollers.forEach(clearInterval);
+  pollers = [
+    setInterval(loadUsers, 6000),
+    setInterval(() => api('presence').catch(() => {}), 12000),
+    setInterval(pollCall, 2500)
+  ];
+}
+
+$('loginForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  $('loginError').textContent = '';
+  const submitBtn = $('loginForm').querySelector('button');
+  if (submitBtn) submitBtn.disabled = true;
+  try {
+    const r = await fetch(API_BASE + '/api.php?action=login', {
+      method: 'POST',
+      mode: 'cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: $('name').value.trim(),
+        phone: $('phone').value.trim()
+      })
+    });
+    const j = await parseApiResponse(r);
+    token = j.token;
+    me = j.user;
+    setStoredToken(token);
+    showApp();
+  } catch (err) {
+    $('loginError').textContent = err.message;
+  } finally {
+    if (submitBtn) submitBtn.disabled = false;
+  }
+});
+
+async function restore() {
+  if (!token) {
+    showLogin();
+    return;
+  }
+  try {
+    const r = await api('me', {}, 'GET');
+    me = r.user;
+    showApp();
+  } catch (e) {
+    setStoredToken('');
+    token = '';
+    showLogin();
+  }
+}
+
+$('logout').onclick = async () => {
+  try { await api('logout'); } catch (e) {}
+  cleanupCall();
+  if (window.msgTimer) clearInterval(window.msgTimer);
+  setStoredToken('');
+  token = '';
+  me = null;
+  peer = null;
+  pollers.forEach(clearInterval);
+  pollers = [];
+  showLogin();
+};
+
+$('refresh').onclick = loadUsers;
+
+async function loadUsers() {
+  try {
+    const r = await api('users', {}, 'GET');
+    users = Array.isArray(r.users) ? r.users : [];
+    $('userCount').textContent = users.length;
+    if (peer) {
+      const updatedPeer = users.find(u => Number(u.id) === Number(peer.id));
+      if (updatedPeer) {
+        peer = updatedPeer;
+        $('peerStatus').textContent = peer.online ? 'Online' : 'Offline';
+      }
+    }
+    renderUsers();
+  } catch (e) {}
+}
+
+function renderUsers() {
+  const q = $('search').value.toLowerCase();
+  $('contacts').innerHTML = '';
+  users
+    .filter(u => (u.name + ' ' + u.phone).toLowerCase().includes(q))
+    .forEach(u => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'contact flex w-full items-center gap-3 border-b border-[#222d34] px-4 py-3 text-left ' + (peer && Number(peer.id) === Number(u.id) ? 'active' : '');
+      b.innerHTML = `<div class="relative grid h-12 w-12 flex-shrink-0 place-items-center rounded-full bg-[#2a3942] font-bold">${esc(u.name.slice(0, 1).toUpperCase())}<i class="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-[#111b21] ${u.online ? 'bg-[#00a884]' : 'bg-[#8696a0]'}"></i></div><div class="min-w-0 flex-1"><div class="truncate font-medium">${esc(u.name)}</div><div class="muted truncate text-xs">${esc(u.phone)}</div></div><span class="${u.online ? 'text-[#00a884]' : 'muted'} text-xs">${u.online ? 'Online' : 'Offline'}</span>`;
+      b.onclick = () => openPeer(u);
+      $('contacts').appendChild(b);
+    });
+}
+
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[c]));
+}
+
+async function openPeer(u) {
+  peer = u;
+  lastId = 0;
+  $('sidebar').classList.add('mobile-hide');
+  $('chat').classList.remove('hidden');
+  $('chat').classList.add('mobile-show');
+  $('empty').classList.add('hidden');
+  $('conversation').classList.remove('hidden');
+  $('conversation').classList.add('flex');
+  $('peerName').textContent = u.name;
+  $('peerAvatar').textContent = u.name.slice(0, 1).toUpperCase();
+  $('peerStatus').textContent = u.online ? 'Online' : 'Offline';
+  await loadMessages(true);
+  if (window.msgTimer) clearInterval(window.msgTimer);
+  window.msgTimer = setInterval(() => loadMessages(false), 2200);
+  renderUsers();
+}
+
+$('back').onclick = () => {
+  $('sidebar').classList.remove('mobile-hide');
+  $('chat').classList.add('hidden');
+  $('chat').classList.remove('mobile-show');
+  if (window.msgTimer) clearInterval(window.msgTimer);
+};
+
+async function loadMessages(forceScroll = false) {
+  if (!peer) return;
+  try {
+    const r = await api('messages', { peer: peer.id }, 'GET');
+    const box = $('messages');
+    const prevLastId = lastId;
+    const nearBottom = (box.scrollHeight - box.scrollTop - box.clientHeight) < 80;
+
+    box.innerHTML = '';
+    const list = Array.isArray(r.messages) ? r.messages : [];
+    list.forEach(m => {
+      lastId = Math.max(lastId, Number(m.id));
+      const div = document.createElement('div');
+      div.className = 'bubble ' + (Number(m.sender_id) === Number(me.id) ? 'mine' : 'theirs');
+      let content = '';
+      if (m.type === 'image') {
+        content = `<img src="${esc(fileUrl(m.file_url))}" alt="Shared image" class="max-h-64 max-w-full rounded-lg" loading="lazy">`;
+      } else if (m.type === 'audio') {
+        content = `<audio controls preload="metadata" src="${esc(fileUrl(m.file_url))}" class="max-w-full"></audio>`;
+      } else {
+        content = `<div class="whitespace-pre-wrap text-sm">${esc(m.content)}</div>`;
+      }
+      div.innerHTML = content + `<div class="muted mt-1 text-right text-[10px]">${esc(formatTime(m.created_at))}</div>`;
+      box.appendChild(div);
+    });
+
+    if (forceScroll || lastId > prevLastId || nearBottom) {
+      box.scrollTop = box.scrollHeight;
+    }
+  } catch (e) {}
+}
+
+async function sendText() {
+  const s = $('messageInput').value.trim();
+  if (!s || !peer) return;
+  $('send').disabled = true;
+  try {
+    await api('send', { peer: peer.id, type: 'text', content: s });
+    $('messageInput').value = '';
+    await loadMessages(true);
+  } catch (e) {
+    toast(e.message);
+  } finally {
+    $('send').disabled = false;
+  }
+}
+
+$('send').onclick = sendText;
+$('messageInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendText();
+  }
+});
+$('search').oninput = renderUsers;
+
+async function uploadFile(file) {
+  if (!peer || !file) return;
+  const fd = new FormData();
+  fd.append('file', file);
+  try {
+    toast('Uploading…');
+    const r = await api('upload', fd);
+    await api('send', { peer: peer.id, type: r.type, file_url: r.url, content: '' });
+    await loadMessages(true);
+  } catch (e) {
+    toast(e.message);
+  }
+}
+
+$('imageFile').onchange = e => {
+  if (e.target.files && e.target.files[0]) {
+    uploadFile(e.target.files[0]);
+  }
+  e.target.value = '';
+};
+
+$('record').onclick = async () => {
+  if (recording) {
+    recording.stop();
+    $('record').textContent = '🎙';
+    return;
+  }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    recordChunks = [];
+    let mimeType = '';
+    if (window.MediaRecorder && typeof MediaRecorder.isTypeSupported === 'function') {
+      const candidates = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/mp4'];
+      mimeType = candidates.find(t => MediaRecorder.isTypeSupported(t)) || '';
+    }
+    recording = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+    recording.ondataavailable = e => {
+      if (e.data && e.data.size > 0) recordChunks.push(e.data);
+    };
+    recording.onstop = async () => {
+      const actualMime = (recording && recording.mimeType) || mimeType || 'audio/webm';
+      const blob = new Blob(recordChunks, { type: actualMime });
+      stream.getTracks().forEach(t => t.stop());
+      recording = null;
+      if (blob.size > 0) {
+        const ext = actualMime.includes('mp4') ? 'm4a' : (actualMime.includes('ogg') ? 'ogg' : 'webm');
+        await uploadFile(new File([blob], 'voice.' + ext, { type: actualMime }));
+      }
+    };
+    recording.start();
+    $('record').textContent = '■';
+    toast('Recording… tap ■ to send');
+  } catch (e) {
+    toast('Microphone permission is needed');
+  }
+};
+
+async function callRequest(action, data) {
+  return api(action, data);
+}
+
+async function startCall() {
+  if (currentCall) {
+    const idToEnd = currentCall;
+    cleanupCall();
+    await callRequest('call_update', { call_id: idToEnd, status: 'ended' }).catch(() => {});
+    toast('Call ended');
+    return;
+  }
+  if (!peer) return;
+  try {
+    localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+    localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+    pc.ontrack = e => {
+      if (e.streams && e.streams[0]) $('remoteAudio').srcObject = e.streams[0];
+    };
+    pc.onicecandidate = e => {
+      if (e.candidate && currentCall) {
+        callRequest('call_ice', { call_id: currentCall, candidate: e.candidate.toJSON() }).catch(() => {});
+      }
+    };
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    const r = await callRequest('call_create', { peer: peer.id, offer });
+    currentCall = String(r.call_id);
+    iceLast = 0;
+    $('callBtn').textContent = 'End call';
+    toast('Calling ' + peer.name + '…');
+    watchCall();
+  } catch (e) {
+    cleanupCall();
+    toast('Could not start call: ' + e.message);
+  }
+}
+
+$('callBtn').onclick = startCall;
+
+async function pollCall() {
+  try {
+    const r = await api('call_poll', {}, 'GET');
+    const c = r.call;
+    if (!c) return;
+    const callId = String(c.id);
+    if (c.status === 'ringing' && Number(c.callee_id) === Number(me.id) && currentCall !== callId) {
+      currentCall = callId;
+      peer = users.find(u => Number(u.id) === Number(c.caller_id)) || {
+        id: c.caller_id,
+        name: c.caller_name,
+        phone: c.caller_phone
+      };
+      $('incomingName').textContent = c.caller_name + ' is calling';
+      $('incoming').classList.remove('hidden');
+      $('incoming').classList.add('flex');
+    } else if (callId === String(currentCall)) {
+      if (c.status === 'accepted' && c.answer_sdp && pc && !pc.currentRemoteDescription) {
+        await pc.setRemoteDescription(new RTCSessionDescription(c.answer_sdp));
+        $('callBtn').textContent = 'End call';
+      }
+      if (['rejected', 'ended', 'busy'].includes(c.status)) {
+        toast('Call ' + c.status);
+        cleanupCall();
+      }
+    }
+  } catch (e) {}
+}
+
+$('acceptCall').onclick = async () => {
+  try {
+    const r = await api('call_poll', {}, 'GET');
+    const c = r.call;
+    if (!c) return;
+    currentCall = String(c.id);
+    localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+    localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+    pc.ontrack = e => {
+      if (e.streams && e.streams[0]) $('remoteAudio').srcObject = e.streams[0];
+    };
+    pc.onicecandidate = e => {
+      if (e.candidate && currentCall) {
+        callRequest('call_ice', { call_id: currentCall, candidate: e.candidate.toJSON() }).catch(() => {});
+      }
+    };
+    await pc.setRemoteDescription(new RTCSessionDescription(c.offer_sdp));
+    const answer = await pc.createAnswer();
+    await pc.setLocalDescription(answer);
+    await callRequest('call_update', { call_id: currentCall, status: 'accepted', answer });
+    $('incoming').classList.add('hidden');
+    $('incoming').classList.remove('flex');
+    $('callBtn').textContent = 'End call';
+    iceLast = 0;
+    watchCall();
+  } catch (e) {
+    cleanupCall();
+    toast('Could not accept call: ' + e.message);
+  }
+};
+
+$('rejectCall').onclick = async () => {
+  const idToReject = currentCall;
+  $('incoming').classList.add('hidden');
+  $('incoming').classList.remove('flex');
+  cleanupCall();
+  if (idToReject) {
+    await callRequest('call_update', { call_id: idToReject, status: 'rejected' }).catch(() => {});
+  }
+};
+
+let callTimer = null;
+function watchCall() {
+  if (callTimer) clearInterval(callTimer);
+  callTimer = setInterval(async () => {
+    if (!currentCall || !pc || !pc.remoteDescription) return;
+    try {
+      const r = await api('call_ice', { call_id: currentCall, after: iceLast }, 'GET');
+      const items = Array.isArray(r.items) ? r.items : [];
+      for (const x of items) {
+        try {
+          if (x.candidate) {
+            await pc.addIceCandidate(new RTCIceCandidate(x.candidate));
+          }
+          iceLast = Math.max(iceLast, Number(x.id));
+        } catch (e) {}
+      }
+    } catch (e) {}
+  }, 1000);
+}
+
+function cleanupCall() {
+  $('callBtn').textContent = '☎ Call';
+  if (callTimer) clearInterval(callTimer);
+  callTimer = null;
+  if (pc) {
+    try { pc.close(); } catch (e) {}
+    pc = null;
+  }
+  if (localStream) {
+    localStream.getTracks().forEach(t => t.stop());
+    localStream = null;
+  }
+  $('remoteAudio').srcObject = null;
+  $('incoming').classList.add('hidden');
+  $('incoming').classList.remove('flex');
+  currentCall = null;
+}
+
+window.addEventListener('beforeunload', () => {
+  if (currentCall) {
+    callRequest('call_update', { call_id: currentCall, status: 'ended' }).catch(() => {});
+  }
+  if (localStream) {
+    localStream.getTracks().forEach(t => t.stop());
+  }
+});
+
+restore();
 </script></body></html>
